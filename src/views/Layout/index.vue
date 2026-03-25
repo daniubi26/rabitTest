@@ -14,6 +14,8 @@ const categoryStore = useCategoryStore()
 
 onMounted(()=>categoryStore.getCategory())
 
+console.log(categoryStore.categoryList)
+
 </script>
 
 <template>
