@@ -20,3 +20,10 @@ export function getHotAPI(){
         url:'/home/hot'
     })
 }
+
+//获取商品模块
+export function getGoodsAPI(){
+    return httpInstance({
+        url:'/home/goods'
+    })
+}
