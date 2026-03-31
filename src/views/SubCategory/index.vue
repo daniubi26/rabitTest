@@ -3,6 +3,7 @@ import { ref,onMounted } from 'vue'
 import { getCategoryFilterAPI,getSubCategoryAPI } from '@/apis/category'
 import { useRoute } from 'vue-router'
 import GoodsItem from '../Home/components/GoodsItem.vue'
+import { get } from '@vueuse/core'
 
 //获取面包屑导航数据
 const categoryData = ref([])
@@ -26,7 +27,7 @@ const reqData=ref({
 })
 const getGoodsList=async()=>{
     const res=await getSubCategoryAPI(reqData.value)
-    console.log(res);
+    // console.log(res);
     goodsList.value=res.result.items
 }
 
@@ -34,6 +35,27 @@ const getGoodsList=async()=>{
 onMounted(()=>{
     getGoodsList()
 })
+
+//tab切换回调
+const tabChange=()=>{
+    console.log('tab切换了',reqData.value.sortField);
+    reqData.value.page=1//为什么：翻页的时候，页码会从1开始
+    getGoodsList()
+}
+
+//加载更多
+const disabled=ref(false)
+const load=async()=>{
+  console.log('加载更多');
+  //获取下一页的数据
+  reqData.value.page++
+  const res=await getSubCategoryAPI(reqData.value)
+  goodsList.value=[...goodsList.value, ...res.result.items]
+  //加载完毕，停止监听
+  if(res.result.items.length===0){
+    disabled.value=true
+  }
+}
 
 </script>
 
@@ -49,12 +71,12 @@ onMounted(()=>{
       </el-breadcrumb>
     </div>
     <div class="sub-container">
-      <el-tabs>
+      <el-tabs v-model="reqData.sortField" @tab-change="tabChange">
         <el-tab-pane label="最新商品" name="publishTime"></el-tab-pane>
         <el-tab-pane label="最高人气" name="orderNum"></el-tab-pane>
         <el-tab-pane label="评论最多" name="evaluateNum"></el-tab-pane>
       </el-tabs>
-      <div class="body">
+      <div class="body" v-infinite-scroll="load":infinite-scroll-disabled="disabled">
          <!-- 商品列表-->
         <GoodsItem v-for="goods in goodsList" :goods="goods" :key="goods.id"/>
       </div>
