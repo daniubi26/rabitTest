@@ -2,6 +2,7 @@
 import axios from "axios";
 import { ElMessage } from 'element-plus'
 import 'element-plus/theme-chalk/el-message.css'
+import { useUserStore } from "@/stores/user";
 
 const httpInstance = axios.create({
     baseURL: "http://pcapi-xiaotuxian-front-devtest.itheima.net",
@@ -14,8 +15,18 @@ const httpInstance = axios.create({
 
 //axios请求拦截器
 httpInstance.interceptors.request.use(config => {
+    //1.从pinia获取token
+    const userStore = useUserStore()
+    //2.按照后端要求拼接token数据
+    const token = userStore.userInfo.token
+
+    if(token){
+        config.headers.Authorization = `Bearer ${token}`
+    }
+
     //1.当发送网络请求时, 在页面中添加一个loading组件, 在loading组件中添加一个 Spin 旋转图标
     //2.某一些请求要求用户必须携带token, 如果没有携带, 那么直接跳转到登录页面
+
     //3.params/data序列化的操作
     return config
 }, err => {
