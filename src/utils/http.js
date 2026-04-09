@@ -2,7 +2,8 @@
 import axios from "axios";
 import { ElMessage } from 'element-plus'
 import 'element-plus/theme-chalk/el-message.css'
-import { useUserStore } from "@/stores/user";
+import { useUserStore } from "@/stores/user"
+import router from "@/router";
 
 const httpInstance = axios.create({
     baseURL: "http://pcapi-xiaotuxian-front-devtest.itheima.net",
@@ -37,11 +38,20 @@ httpInstance.interceptors.response.use(res => {
 
     return res.data
 }, err => {
+    const userStore = useUserStore()
     //统一错误提示
     ElMessage({
         type:'warning',
         message:err.response.data.message
     })
+    //401token失效处理
+    //1.清楚本地数据
+    //2.跳转到登录页面
+    if(err.response.status === 401){
+        userStore.clearUserInfo()
+        router.push('/login')
+    }
+
     return Promise.reject(err)
 })
 
