@@ -3,8 +3,16 @@
 
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { useUserStore } from './user'
+
+import { insertCartAPI,findNewCartListAPI } from '@/apis/cart'
 
 export const useCartStore=defineStore('cart',()=>{ 
+
+    //判断是否登录
+    const userStore = useUserStore()
+    const isLogin = computed(() => userStore.userInfo.token)
+    
     //1.定义state -cartList
     const cartList = ref([])
 
@@ -15,20 +23,26 @@ export const useCartStore=defineStore('cart',()=>{
         const item=cartList.value.find((item)=>skuId===item.skuId)
         item.selected=selected
     }
+
     //2.定义action -addCart
-    const addCart=(goods)=>{
-        //添加购物车操作
-
-        //已添加过 -count +1 
-
-        //没有添加过，直接push
-        const item=cartList.value.find((item)=>goods.skuId===item.skuId)
-        if(item){
-            item.count++
+    const addCart=async(goods)=>{
+        const {skuId,count}=goods
+        if(isLogin.value){
+            //登录之后的加入购物车逻辑
+            await insertCartAPI({skuId,count})
+            const res=await findNewCartListAPI()
+            cartList.value=res.result
         }else{
-            cartList.value.push(goods)
+            //添加购物车操作
+            //已添加过 -count +1 
+            //没有添加过，直接push
+            const item = cartList.value.find((item) => goods.skuId === item.skuId)
+            if (item) {
+                item.count++
+            } else {
+                cartList.value.push(goods)
+            }
         }
-        
     }
     const delCart=(skuId)=>{
         //思路：1.找到要删除项的下标值-splice
