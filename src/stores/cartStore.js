@@ -1,8 +1,6 @@
 //封装购物车模块
 
-import { all } from 'axios'
-import { ElStep } from 'element-plus'
-import { ca } from 'element-plus/es/locale/index.mjs'
+
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
@@ -23,6 +21,7 @@ export const useCartStore=defineStore('cart',()=>{
         }else{
             cartList.value.push(goods)
         }
+        
     }
     const delCart=(skuId)=>{
         //思路：1.找到要删除项的下标值-splice
