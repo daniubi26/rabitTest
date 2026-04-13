@@ -8,6 +8,13 @@ export const useCartStore=defineStore('cart',()=>{
     //1.定义state -cartList
     const cartList = ref([])
 
+
+    //单选功能
+    const singleCheck=(skuId,selected)=>{
+        //通过skuid找到要修改的那一项
+        const item=cartList.value.find((item)=>skuId===item.skuId)
+        item.selected=selected
+    }
     //2.定义action -addCart
     const addCart=(goods)=>{
         //添加购物车操作
@@ -29,6 +36,14 @@ export const useCartStore=defineStore('cart',()=>{
         const idx=cartList.value.findIndex((item)=>skuId===item.skuId)
         cartList.value.splice(idx,1)
     }
+    //是否全选
+    const isAll = computed(() => cartList.value.every(item => item.selected))
+    //全选功能 
+    const allCheck=(selected)=>{
+        //把carlist中所有设为选择状态
+        cartList.value.forEach(item => item.selected = selected)
+    }
+
 
     //计算属性
     //1.总的数量
@@ -40,8 +55,13 @@ export const useCartStore=defineStore('cart',()=>{
         allCount,
         allPrice,
         addCart,
-        delCart
+        delCart,
+        singleCheck,
+        isAll,
+        allCheck
     }
+
+
 },{
     persist:true
 })
