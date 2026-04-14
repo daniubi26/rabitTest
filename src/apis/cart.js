@@ -18,3 +18,23 @@ export const findNewCartListAPI = ()=>{
         url:'/member/cart'
     })
 }
+
+//删除购物车列表
+export const delCartAPI = (ids)=>{
+    return httpInstance({
+        url:'/member/cart',
+        method:'DELETE',
+        data:{
+            ids
+        }
+    })
+}
+
+//合并购物车
+export const mergeCartAPI=(data)=>{
+    return httpInstance({
+        url:'/member/cart/merge',
+        method:'POST',
+        data
+    })
+}

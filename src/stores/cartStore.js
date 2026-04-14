@@ -3,11 +3,22 @@
 
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { useUserStore } from './user'
+import { useUserStore } from './userStore'
 
-import { insertCartAPI,findNewCartListAPI } from '@/apis/cart'
+import { insertCartAPI,findNewCartListAPI,delCartAPI } from '@/apis/cart'
 
 export const useCartStore=defineStore('cart',()=>{ 
+
+
+    //清楚购物车
+    const clearCart=async()=>{
+        cartList.value = []
+    }
+    //获取最新购物车列表
+    const updateNewList = async () => {
+        const res = await findNewCartListAPI()
+        cartList.value = res.result
+    }
 
     //判断是否登录
     const userStore = useUserStore()
@@ -30,8 +41,7 @@ export const useCartStore=defineStore('cart',()=>{
         if(isLogin.value){
             //登录之后的加入购物车逻辑
             await insertCartAPI({skuId,count})
-            const res=await findNewCartListAPI()
-            cartList.value=res.result
+            updateNewList()
         }else{
             //添加购物车操作
             //已添加过 -count +1 
@@ -44,11 +54,18 @@ export const useCartStore=defineStore('cart',()=>{
             }
         }
     }
-    const delCart=(skuId)=>{
-        //思路：1.找到要删除项的下标值-splice
-        //2.使用数组的过滤方法 -filter
-        const idx=cartList.value.findIndex((item)=>skuId===item.skuId)
-        cartList.value.splice(idx,1)
+    const delCart=async(skuId)=>{
+        if(isLogin.value){
+            //调用接口实现接口购物车中的删除功能
+            await delCartAPI([skuId])
+            updateNewList()
+        }else{
+            //思路：1.找到要删除项的下标值-splice
+            //2.使用数组的过滤方法 -filter
+            const idx = cartList.value.findIndex((item) => skuId === item.skuId)
+            cartList.value.splice(idx, 1)
+        }
+       
     }
     //是否全选
     const isAll = computed(() => cartList.value.every(item => item.selected))
@@ -57,6 +74,7 @@ export const useCartStore=defineStore('cart',()=>{
         //把carlist中所有设为选择状态
         cartList.value.forEach(item => item.selected = selected)
     }
+
 
 
     //计算属性
@@ -82,7 +100,9 @@ export const useCartStore=defineStore('cart',()=>{
         isAll,
         allCheck,
         selectedCount,
-        selectedPrice
+        selectedPrice,
+        clearCart,
+        updateNewList
     }
 
 },{
